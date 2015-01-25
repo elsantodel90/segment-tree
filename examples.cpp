@@ -169,6 +169,27 @@ struct HackerCupNode
 
 // FIN DE CODIGO DEL SEGMENT_TREE_HACKERCUP
 
+// Nuevo ejemplo bien cortito: Esto seria todo lo que hay que agregar al codigo de notebook para un lazy-update con suma.
+
+struct LazySumData
+{
+    int lazy;
+    LazySumData() : lazy(0) {}
+    void update(int i,int j, const LazySumData &o) {lazy += o.lazy;};
+};
+
+
+struct LazySumStat
+{
+    int s;
+    LazySumStat() : s(0) {}
+    void merge(const LazySumStat &a, const LazySumStat &b)
+    {
+        s = a.s + b.s;
+    }
+    void update(int i,int j, const LazySumData &data) {s += data.lazy * (j-i);}
+};
+
 // Ejemplo de uso
 
 ostream & operator <<(ostream &o, const MinNode&m)
@@ -181,21 +202,29 @@ ostream & operator <<(ostream &o, const LazySumNode&m)
     return o << m.s << " " << m.lazy;
 }
 
+ostream & operator <<(ostream &o, const LazySumStat& m)
+{
+    return o << m.s;
+}
+
+
 int main()
 {
     int N = 10;
-    LazySumNode *v;
-    SegmentTree<LazySumNode, int> tree(N, v); // En esta version, todo bien con la memoria local de stack
-    forn(i,N) v[i].s = i*i;
+    SegmentTree<LazySumStat, LazySumData>::Node *v;
+    SegmentTree<LazySumStat, LazySumData> tree(N, v); // En esta version, todo bien con la memoria local de stack
+    forn(i,N) v[i].stat.s = i*i;
     tree.init();
-    forn(i,tree.N*2)
-        cout << i << "   " << tree.v[i].s << " " << tree.v[i].lazy << endl;
+    //forn(i,tree.N*2)
+    //    cout << i << "   " << tree.v[i].s << " " << tree.v[i].lazy << endl;
     cout << tree.get(2,5) << endl;
     cout << tree.get(2,5) << endl;
-    tree.update(2,77);
+    LazySumData data; data.lazy = 77;
+    tree.update(2,data);
     cout << tree.get(2,5) << endl;
     cout << tree.get(2,5) << endl;
-    tree.updateRange(2,4,1);
+    data.lazy = 1;
+    tree.updateRange(2,4,data);
     cout << tree.get(2,5) << endl;
     cout << tree.get(2,5) << endl;
     return 0;
