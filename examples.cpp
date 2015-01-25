@@ -1,4 +1,5 @@
 #include <iostream>
+#include <vector>
 
 using namespace std;
 
@@ -182,10 +183,9 @@ ostream & operator <<(ostream &o, const LazySumNode&m)
 
 int main()
 {
-    // Uno quiere que sea global o static para no usar memoria stack.
-    static SegmentTree<LazySumNode, int> tree;
     int N = 10;
-    LazySumNode *v = tree.preInit(N);
+    LazySumNode *v;
+    SegmentTree<LazySumNode, int> tree(N, v); // En esta version, todo bien con la memoria local de stack
     forn(i,N) v[i].s = i*i;
     tree.init();
     forn(i,tree.N*2)
