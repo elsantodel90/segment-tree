@@ -4,12 +4,18 @@
 // Codigo del Segment Tree con Lazy Update propiamente (notebook)
 
 // Contrato:
-// Stats tiene que tener merge, update y constructor por defecto al elemento neutro de Stats respecto del merge.
-// UpdateData tiene que tener merge y constructor por defecto al elemento neutro de UpdateData respecto del merge, neutro que ademas no deberia modificar Stats al hacer update.
+// Stats tiene que tener:
+//   -- Un constructor que toma dos stats (Y obtiene el merge)
+//   -- Un metodo update 
+//   -- Un constructor por defecto al elemento neutro de Stats respecto del merge.
+// UpdateData tiene que tener:
+//   -- Un metodo merge 
+//   -- Un constructor por defecto al elemento neutro de UpdateData respecto del merge, neutro que ademas no deberia modificar Stats al hacer update.
+
 // En otras palabras, se espera que UpdateData sea un monoide no necesariamente conmutativo con el merge, y constructor por defecto al elemento neutro.
-// De la misma manera se espera que Stats con su merge y constructor por defecto tambien sea un monoide, no necesariamente conmutativo.
+// De la misma manera se espera que Stats con su merge (constructor) y constructor por defecto tambien sea un monoide, no necesariamente conmutativo.
 // Y ademas se espera que UpdateData sea una accion sobre Stats, es decir, con un poco de abuso de notacion (porque esos metodos son void, pero hacemos de cuenta que devuelven el objeto que queda luego de modificar):
-//  -->  stat.update(neutro) == stat
+//  -->  stat.update(UpdateData()) == stat
 //  --> (stat.update(data1)).update(data2) == stat.update(data1.merge(data2))
 
 template <typename Stats, typename UpdateData>
@@ -19,7 +25,7 @@ struct SegmentTree
     {
         UpdateData lazy;
         Stats stat;
-        void merge(const Node &a, const Node &b) {stat.merge(a.stat,b.stat);}
+        void merge(const Node &a, const Node &b) {stat = Stats(a.stat,b.stat);}
         void update(int i, int j, const UpdateData &data) {lazy.update(i,j,data); stat.update(i,j,data);}
         void split(int i, int j, int c, Node &a, Node &b)
         {
@@ -42,9 +48,7 @@ struct SegmentTree
         if (qB <= a || b <= qA) return Stats();
         int c = (a+b)/2;
         NODE.split(a,b,c, LEFT, RIGHT);
-        Stats res;
-        res.merge(iget(a, c, 2*i), iget(c, b, 2*i+1));
-        return res;
+        return Stats(iget(a, c, 2*i), iget(c, b, 2*i+1));
     }
     void iupdate(int a, int b, int i) // Update interno
     {

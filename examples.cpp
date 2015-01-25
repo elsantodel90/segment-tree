@@ -175,6 +175,7 @@ struct LazySumData
 {
     int lazy;
     LazySumData() : lazy(0) {}
+    LazySumData(int val) : lazy(val) {}
     void update(int i,int j, const LazySumData &o) {lazy += o.lazy;};
 };
 
@@ -183,14 +184,12 @@ struct LazySumStat
 {
     int s;
     LazySumStat() : s(0) {}
-    void merge(const LazySumStat &a, const LazySumStat &b)
-    {
-        s = a.s + b.s;
-    }
+    LazySumStat(int val) : s(val) {}
+    LazySumStat(const LazySumStat &a, const LazySumStat &b) : s(a.s + b.s) {}
     void update(int i,int j, const LazySumData &data) {s += data.lazy * (j-i);}
 };
 
-// Ejemplo de uso
+// Operadores de imprimir para los ejemplos
 
 ostream & operator <<(ostream &o, const MinNode&m)
 {
@@ -207,25 +206,31 @@ ostream & operator <<(ostream &o, const LazySumStat& m)
     return o << m.s;
 }
 
+// Ejemplo de uso
 
 int main()
 {
+    // Notar que al haberle puesto un constructor que toma int a LazySumStat y LazySumData, podemos asignarle ints de una,
+    //  lo cual nos limpia un poco la sintaxis en este ejemplo pavo donde los structs no son nada mas que un int.
     int N = 10;
     SegmentTree<LazySumStat, LazySumData>::Node *v;
     SegmentTree<LazySumStat, LazySumData> tree(N, v); // En esta version, todo bien con la memoria local de stack
-    forn(i,N) v[i].stat.s = i*i;
+    forn(i,N) v[i].stat = i*i; // Se inicializa el v[i].stat, y los datos lazy se dejan como estan.
     tree.init();
-    //forn(i,tree.N*2)
-    //    cout << i << "   " << tree.v[i].s << " " << tree.v[i].lazy << endl;
+    // Impresion del estado interno completo, a modo de DEBUG de que se construyo bien.
+    forn(i,tree.N*2)
+        cout << i << "   " << tree.v[i].stat.s << " " << tree.v[i].lazy.lazy << endl;
+        
     cout << tree.get(2,5) << endl;
     cout << tree.get(2,5) << endl;
-    LazySumData data; data.lazy = 77;
-    tree.update(2,data);
+    tree.update(2,77);
     cout << tree.get(2,5) << endl;
     cout << tree.get(2,5) << endl;
-    data.lazy = 1;
-    tree.updateRange(2,4,data);
+    tree.updateRange(2,4,1);
     cout << tree.get(2,5) << endl;
     cout << tree.get(2,5) << endl;
+    // Impresion del estado interno completo, a modo de DEBUG de que quedo lo que tenia que quedar.
+    forn(i,tree.N*2)
+        cout << i << "   " << tree.v[i].stat.s << " " << tree.v[i].lazy.lazy << endl;
     return 0;
 }
