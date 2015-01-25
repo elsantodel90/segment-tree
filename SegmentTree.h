@@ -21,9 +21,8 @@ struct SegmentTree
         Stats stat;
         void merge(const Node &a, const Node &b) {stat.merge(a.stat,b.stat);}
         void update(int i, int j, const UpdateData &data) {lazy.update(i,j,data); stat.update(i,j,data);}
-        void split(int i, int j, Node &a, Node &b)
+        void split(int i, int j, int c, Node &a, Node &b)
         {
-            int c = (i+j)/2;
             a.update(i,c, lazy);
             b.update(c,j, lazy);
             lazy = UpdateData();
@@ -34,28 +33,31 @@ struct SegmentTree
     vector<Node> v;
     SegmentTree(int userN, Node* &userData) {N = 1; while (N < userN) N *= 2; v.resize(2*N); userData = v.data() + N;}
     // Funciones internas (private)
+    #define NODE  v[i]
+    #define LEFT  v[2*i]
+    #define RIGHT v[2*i+1]
     Stats iget(int a, int b, int i) // Get interno
     {
-        if (qA <= a && b <= qB) return v[i].stat;
+        if (qA <= a && b <= qB) return NODE.stat;
         if (qB <= a || b <= qA) return Stats();
-        v[i].split(a,b, v[2*i], v[2*i+1]);
         int c = (a+b)/2;
+        NODE.split(a,b,c, LEFT, RIGHT);
         Stats res;
         res.merge(iget(a, c, 2*i), iget(c, b, 2*i+1));
         return res;
     }
     void iupdate(int a, int b, int i) // Update interno
     {
-        if (qA <= a && b <= qB) {v[i].update(a,b, qData); return ;}
+        if (qA <= a && b <= qB) {NODE.update(a,b, qData); return ;}
         if (qB <= a || b <= qA) return;
-        v[i].split(a,b, v[2*i], v[2*i+1]);
         int c = (a+b)/2;
+        NODE.split(a,b,c, LEFT, RIGHT);
         iupdate(a, c, 2*i);
         iupdate(c, b, 2*i+1);
-        v[i].merge(v[2*i], v[2*i+1]);
+        NODE.merge(LEFT, RIGHT);
     }
     // Funciones que puede llamar el usuario (public)
-    void init() {dforsn(i,1, N) v[i].merge(v[2*i], v[2*i+1]);} // Se inicializa luego de llenar el arreglo userData con los valores iniciales.
+    void init() {dforsn(i,1, N) NODE.merge(LEFT, RIGHT);} // Se inicializa luego de llenar el arreglo userData con los valores iniciales.
     Stats get(int a,int b) {qA = a; qB = b; return iget(0, N, 1); } // Get que llama el usuario
     void updateRange(int a,int b, const UpdateData &data) {qData = data; qA = a; qB = b; iupdate(0, N, 1);} // updateRange que puede llamar el usuario
     void update(int i, const UpdateData &data) { updateRange(i,i+1, data); } // update que puede llamar el usuario
